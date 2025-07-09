@@ -3,7 +3,7 @@ const CONFIG = {
     // Backend URL - Update this with your Render backend URL
     BACKEND_URL: window.location.hostname === 'localhost' 
         ? 'http://localhost:3000' 
-        : 'https://your-render-backend-url.onrender.com',
+        : 'https://hangman-game-online.onrender.com',
     
     // Game settings
     GAME_SETTINGS: {
