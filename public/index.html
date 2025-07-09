@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multiplayer Hangman</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Main Menu -->
+        <div id="main-menu" class="screen active">
+            <div class="menu-card">
+                <h1>Multiplayer Hangman</h1>
+                <p>Real-time competitive word guessing game</p>
+                
+                <div class="menu-options">
+                    <button id="create-lobby-btn" class="btn btn-primary">Create Game</button>
+                    <button id="join-lobby-btn" class="btn btn-secondary">Join Game</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Create Lobby -->
+        <div id="create-lobby" class="screen">
+            <div class="form-card">
+                <h2>Create New Game</h2>
+                <form id="create-lobby-form">
+                    <div class="form-group">
+                        <label for="moderator-name">Your Name (Moderator)</label>
+                        <input type="text" id="moderator-name" required maxlength="20" placeholder="Enter your name">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="max-players">Maximum Players</label>
+                        <select id="max-players">
+                            <option value="4">4 Players</option>
+                            <option value="6" selected>6 Players</option>
+                            <option value="8">8 Players</option>
+                            <option value="10">10 Players</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="words-per-game">Words Per Game</label>
+                        <select id="words-per-game">
+                            <option value="3">3 Words</option>
+                            <option value="5" selected>5 Words</option>
+                            <option value="7">7 Words</option>
+                            <option value="10">10 Words</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" id="back-to-menu" class="btn btn-secondary">Back</button>
+                        <button type="submit" class="btn btn-primary">Create Lobby</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Join Lobby -->
+        <div id="join-lobby" class="screen">
+            <div class="form-card">
+                <h2>Join Game</h2>
+                <form id="join-lobby-form">
+                    <div class="form-group">
+                        <label for="player-name">Your Name</label>
+                        <input type="text" id="player-name" required maxlength="20" placeholder="Enter your name">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="room-code">Room Code</label>
+                        <input type="text" id="room-code" required maxlength="8" placeholder="Enter room code" style="text-transform: uppercase;">
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" id="back-to-menu-join" class="btn btn-secondary">Back</button>
+                        <button type="submit" class="btn btn-primary">Join Game</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Lobby Screen -->
+        <div id="lobby" class="screen">
+            <div class="lobby-container">
+                <div class="lobby-header">
+                    <h2>Game Lobby</h2>
+                    <div class="room-info">
+                        <span class="room-code">Room Code: <strong id="lobby-room-code"></strong></span>
+                        <span class="player-count">Players: <span id="current-players">0</span>/<span id="max-players-display">0</span></span>
+                    </div>
+                </div>
+
+                <div class="lobby-content">
+                    <div class="players-section">
+                        <h3>Players</h3>
+                        <div id="players-list" class="players-list"></div>
+                    </div>
+
+                    <div class="game-settings">
+                        <h3>Game Settings</h3>
+                        <div class="settings-info">
+                            <div class="setting-item">
+                                <span>Words per game:</span>
+                                <span id="words-per-game-display">5</span>
+                            </div>
+                            <div class="setting-item">
+                                <span>Moderator:</span>
+                                <span id="moderator-display"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Moderator Controls -->
+                <div id="moderator-controls" class="moderator-controls" style="display: none;">
+                    <h3>Moderator Controls</h3>
+                    <div class="word-submission">
+                        <div class="form-group">
+                            <label for="word-category">Category</label>
+                            <select id="word-category">
+                                <option value="Animals">Animals</option>
+                                <option value="Countries">Countries</option>
+                                <option value="Movies">Movies</option>
+                                <option value="Sports">Sports</option>
+                                <option value="Food">Food</option>
+                                <option value="Technology">Technology</option>
+                                <option value="Custom">Custom</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="word-list">Words (one per line)</label>
+                            <textarea id="word-list" rows="6" placeholder="Enter words, one per line..."></textarea>
+                        </div>
+                        
+                        <div class="moderator-actions">
+                            <button id="submit-words" class="btn btn-primary">Submit Words</button>
+                            <button id="start-game" class="btn btn-success" disabled>Start Game</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="lobby-actions">
+                    <button id="leave-lobby" class="btn btn-danger">Leave Lobby</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Screen -->
+        <div id="game" class="screen">
+            <div class="game-container">
+                <div class="game-header">
+                    <div class="game-info">
+                        <div class="word-info">
+                            <span class="category">Category: <span id="current-category"></span></span>
+                            <span class="word-progress">Word <span id="current-word-num">1</span> of <span id="total-words">5</span></span>
+                        </div>
+                        <div class="timer-container">
+                            <div class="timer" id="timer">30</div>
+                            <div class="timer-label">seconds</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="game-content">
+                    <div class="word-display">
+                        <div id="word-letters" class="word-letters"></div>
+                    </div>
+
+                    <div class="game-status">
+                        <div class="current-player">
+                            <span>Current turn: <strong id="current-player-name"></strong></span>
+                        </div>
+                        <div class="guessed-letters">
+                            <span>Guessed letters: <span id="guessed-letters-display"></span></span>
+                        </div>
+                    </div>
+
+                    <div class="guess-section">
+                        <div class="alphabet" id="alphabet"></div>
+                        <div class="guess-input" style="display: none;">
+                            <input type="text" id="letter-input" maxlength="1" placeholder="Guess a letter">
+                            <button id="submit-guess" class="btn btn-primary">Guess</button>
+                        </div>
+                    </div>
+
+                    <div class="hangman-display" id="hangman-display">
+                        <svg width="200" height="250" viewBox="0 0 200 250">
+                            <!-- Gallows -->
+                            <line x1="10" y1="240" x2="150" y2="240" stroke="#8B4513" stroke-width="4"/>
+                            <line x1="30" y1="240" x2="30" y2="20" stroke="#8B4513" stroke-width="4"/>
+                            <line x1="30" y1="20" x2="120" y2="20" stroke="#8B4513" stroke-width="4"/>
+                            <line x1="120" y1="20" x2="120" y2="40" stroke="#8B4513" stroke-width="4"/>
+                            
+                            <!-- Hangman parts (initially hidden) -->
+                            <circle id="head" cx="120" cy="50" r="10" stroke="#333" stroke-width="2" fill="none" style="display: none;"/>
+                            <line id="body" x1="120" y1="60" x2="120" y2="150" stroke="#333" stroke-width="2" style="display: none;"/>
+                            <line id="left-arm" x1="120" y1="80" x2="90" y2="110" stroke="#333" stroke-width="2" style="display: none;"/>
+                            <line id="right-arm" x1="120" y1="80" x2="150" y2="110" stroke="#333" stroke-width="2" style="display: none;"/>
+                            <line id="left-leg" x1="120" y1="150" x2="90" y2="190" stroke="#333" stroke-width="2" style="display: none;"/>
+                            <line id="right-leg" x1="120" y1="150" x2="150" y2="190" stroke="#333" stroke-width="2" style="display: none;"/>
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="scoreboard">
+                    <h3>Scoreboard</h3>
+                    <div id="players-scores" class="players-scores"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game End Screen -->
+        <div id="game-end" class="screen">
+            <div class="end-card">
+                <h2>Game Over!</h2>
+                <div class="winner-display">
+                    <h3>🏆 Winner: <span id="winner-name"></span></h3>
+                    <div class="winner-score">Score: <span id="winner-score"></span></div>
+                </div>
+                
+                <div class="final-scores">
+                    <h3>Final Scores</h3>
+                    <div id="final-scoreboard" class="final-scoreboard"></div>
+                </div>
+                
+                <div class="end-actions">
+                    <button id="new-game" class="btn btn-primary">New Game</button>
+                    <button id="back-to-main" class="btn btn-secondary">Main Menu</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notifications -->
+        <div id="notifications" class="notifications"></div>
+
+        <!-- Loading Overlay -->
+        <div id="loading" class="loading" style="display: none;">
+            <div class="spinner"></div>
+            <p>Connecting...</p>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
