@@ -1,0 +1,17 @@
+{
+  "name": "multiplayer-hangman-frontend",
+  "version": "1.0.0",
+  "description": "Frontend for multiplayer hangman game",
+  "main": "index.html",
+  "scripts": {
+    "dev": "serve -s . -l 3000",
+    "build": "echo 'Static files ready for deployment'",
+    "start": "serve -s . -l 3000"
+  },
+  "devDependencies": {
+    "serve": "^14.2.1"
+  },
+  "keywords": ["multiplayer", "hangman", "game", "frontend"],
+  "author": "Your Name",
+  "license": "MIT"
+}
