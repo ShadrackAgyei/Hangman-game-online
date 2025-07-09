@@ -2,20 +2,26 @@
   "name": "multiplayer-hangman",
   "version": "1.0.0",
   "description": "Real-time multiplayer hangman game with lobbies and competitive scoring",
-  "main": "server/server.js",
+  "main": "api/index.js",
   "scripts": {
-    "start": "node server/server.js",
-    "dev": "nodemon server/server.js"
+    "dev": "vercel dev",
+    "build": "echo 'Build complete'",
+    "start": "vercel dev"
   },
   "dependencies": {
     "express": "^4.18.2",
     "socket.io": "^4.7.5",
-    "uuid": "^9.0.1"
+    "uuid": "^9.0.1",
+    "cors": "^2.8.5"
   },
   "devDependencies": {
-    "nodemon": "^3.0.2"
+    "@vercel/node": "^3.0.0",
+    "vercel": "^32.0.0"
   },
-  "keywords": ["multiplayer", "hangman", "game", "websocket", "real-time"],
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": ["multiplayer", "hangman", "game", "websocket", "real-time", "vercel"],
   "author": "Your Name",
   "license": "MIT"
 }

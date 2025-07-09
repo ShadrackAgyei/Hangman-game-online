@@ -1,21 +1,26 @@
 const express = require('express');
-const http = require('http');
-const socketIo = require('socket.io');
-const path = require('path');
+const { createServer } = require('http');
+const { Server } = require('socket.io');
 const { v4: uuidv4 } = require('uuid');
 const GameManager = require('./gameManager');
 const cors = require('cors');
 
 const app = express();
+
 // Enable CORS for all routes
 app.use(cors());
 
-const server = http.createServer(app);
-const io = socketIo(server, {
+// Create HTTP server
+const server = createServer(app);
+
+// Initialize Socket.io with CORS
+const io = new Server(server, {
     cors: {
-        origin: process.env.FRONTEND_URL || "*",
-        methods: ["GET", "POST"]
-    }
+        origin: "*",
+        methods: ["GET", "POST"],
+        credentials: true
+    },
+    transports: ['websocket', 'polling']
 });
 
 // Health check endpoint
@@ -198,7 +203,15 @@ io.on('connection', (socket) => {
     });
 });
 
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});
+// Export the app for Vercel
+module.exports = app;
+module.exports.io = io;
+module.exports.server = server;
+
+// For local development
+if (process.env.NODE_ENV !== 'production') {
+    const PORT = process.env.PORT || 3000;
+    server.listen(PORT, () => {
+        console.log(`Server running on port ${PORT}`);
+    });
+}

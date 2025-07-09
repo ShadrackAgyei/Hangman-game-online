@@ -1,6 +1,7 @@
 class HangmanGame {
     constructor() {
-        this.socket = io();
+        // Connect to backend server using config
+        this.socket = io(window.HANGMAN_CONFIG.BACKEND_URL);
         this.currentRoom = null;
         this.currentUser = null;
         this.isPlayer = false;
