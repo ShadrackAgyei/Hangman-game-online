@@ -10,10 +10,5 @@
       "src": "/(.*)",
       "dest": "/public/$1"
     }
-  ],
-  "functions": {
-    "public/index.html": {
-      "runtime": "@vercel/static"
-    }
-  }
+  ]
 }
